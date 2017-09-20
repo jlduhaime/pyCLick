@@ -1,2 +1,2 @@
 # pyCLick
-minimal click adventure game in python
+minimal click adventure game in python using pygame
