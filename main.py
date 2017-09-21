@@ -15,11 +15,10 @@ class Score:
         self.val += 1 * self.multiplier
 
 class Circle:
-
     def __init__(self, max_x, max_y):
         self._radius = 50
-        self._x_pos = random.randint(0 + self._radius, max_x - (self._radius * 2))
-        self._y_pos = random.randint(0 + self._radius, max_y - (self._radius * 2))
+        self._x_pos = random.randint(0 + self._radius, max_x - self._radius)
+        self._y_pos = random.randint(0 + self._radius, max_y - self._radius)
         self.new_x = self._x_pos
         self.new_y = self._y_pos
         self.max_x = max_x
@@ -31,9 +30,9 @@ class Circle:
         pygame.draw.circle(surface, self._color, (self._x_pos, self._y_pos), self._radius, self._border)
 
     def move(self, amount):
-        if self.new_x == self._x_pos and self.new_y == self._y_pos:
-            self.new_x = self._x_pos + random.randint(-self._x_pos, self.max_x - self._radius - self._x_pos)
-            self.new_y = self._y_pos + random.randint(-self._y_pos, self.max_y - self._radius - self._y_pos)
+        if self.new_x >= (self._x_pos-amount) and self.new_x <= (self._x_pos+amount) and self.new_y >= (self._y_pos-amount) and self.new_y <= (self._y_pos+amount):
+            self.new_x = self._x_pos + random.randint(-self._x_pos + self._radius, self.max_x - self._radius - self._x_pos)
+            self.new_y = self._y_pos + random.randint(-self._y_pos + self._radius, self.max_y - self._radius - self._y_pos)
 
         else:
             if self.new_x > self._x_pos:
@@ -45,9 +44,9 @@ class Circle:
             if self.new_y < self._y_pos:
                 self._y_pos -= amount
 
-    def shrink(self):
-        if self._radius > 10:
-            self._radius -= 1
+    def shrink(self, amount):
+        if self._radius > amount:
+            self._radius -= amount
 
 class Final:
     def __init__(self):
@@ -87,6 +86,25 @@ class Game:
         self.score = Score()
         self.final_score = Final()
 
+    def calc_speed(self, score):
+        if score < 499:
+            return 1
+        elif score < 599:
+            return 2
+        elif score < 899:
+            return 3
+        elif score < 999:
+            return 4
+        return 5
+
+    def shrink_circle(self, circle, score):
+        if score == 200:
+            circle.shrink(5)
+        if score == 600:
+            circle.shrink(7)
+        if score == 900:
+            circle.shrink(10)
+
     def on_event(self, event):
         if event.type == QUIT:
             self._running = False
@@ -99,9 +117,12 @@ class Game:
 
     def on_loop(self):
         position = self._display.get_at(pygame.mouse.get_pos()) == (self.circle._color)
+        speed = self.calc_speed(self.score.val)
+
+        self.shrink_circle(self.circle, self.score.val)
 
         if self._inside == True:
-            self.circle.move(1)
+            self.circle.move(speed)
 
             if position != 1:
                 self._inside = False
@@ -138,7 +159,7 @@ class Game:
             self.on_render()
 
             self._clock.tick(100)
-        print(self._clock.get_fps())
+
         self.on_cleanup()
 
 if __name__ == "__main__":
